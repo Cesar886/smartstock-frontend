@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import ResumenGeneral from './components/ResumenGeneral';
 import DashboardRendimiento from './components/DashboardRendimiento';
 import SolicitudPedido from './components/SolicitudPedido';
+import SolicitudPedidoConValidacion from './components/SolicitudPedidoConValidacion';
 import ListaPedidos from './components/ListaPedidos';
 import AlertasStock from './components/AlertasStock';
 import TrackingCliente from './components/TrackingCliente';
@@ -24,6 +25,7 @@ function App() {
               <Route path="/" element={<ResumenGeneral />} />
               <Route path="/dashboard" element={<DashboardRendimiento />} />
               <Route path="/solicitar" element={<SolicitudPedido />} />
+              <Route path="/solicitar-validado" element={<SolicitudPedidoConValidacion />} />
               <Route path="/pedidos" element={<ListaPedidos />} />
               <Route path="/alertas" element={<AlertasStock />} />
               <Route path="/tracking" element={<TrackingCliente />} />
