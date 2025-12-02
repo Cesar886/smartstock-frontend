@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { clientesService, productosService, contratosService, pedidosService } from '../services/api';
 import { useNotificaciones } from '../hooks/useNotificaciones';
-import { AlertCircle, CheckCircle, XCircle, Package, ArrowRight, CreditCard, Activity, Users, Box } from 'lucide-react';
+import { AlertCircle, CheckCircle, XCircle, Package, ArrowRight, CreditCard, Activity, Users, Box, Upload, Download, FileText, AlertTriangle } from 'lucide-react';
 
 const SolicitudPedido = () => {
   const [clientes, setClientes] = useState([]);
@@ -15,6 +15,12 @@ const SolicitudPedido = () => {
   const [loading, setLoading] = useState(false);
   const [loadingProductos, setLoadingProductos] = useState(false);
   const { error: mostrarError, exito: mostrarExito } = useNotificaciones();
+
+  // Estados para validación de nómina
+  const [usarValidacionNomina, setUsarValidacionNomina] = useState({});
+  const [archivos, setArchivos] = useState({});
+  const [validacionesNomina, setValidacionesNomina] = useState({});
+  const [erroresNomina, setErroresNomina] = useState({});
 
   // Cargar clientes al inicio
   const cargarClientes = useCallback(async () => {
@@ -242,14 +248,120 @@ const SolicitudPedido = () => {
     setLoading(false);
   };
 
-  return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Nueva Solicitud de Pedido</h1>
-        <p className="text-slate-500 mt-1">Selecciona el cliente y el tipo de tarjeta que deseas solicitar.</p>
-      </div>
+  // Funciones para validación de nómina por producto
+  const descargarPlantilla = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/validacion/plantilla');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'plantilla_nomina_empleados.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (error) {
+      console.error('Error al descargar plantilla:', error);
+      mostrarError('Error al descargar plantilla');
+    }
+  };
 
+  const toggleValidacionNomina = (productoId) => {
+    setUsarValidacionNomina(prev => ({
+      ...prev,
+      [productoId]: !prev[productoId]
+    }));
+    // Limpiar datos de validación cuando se desactiva
+    if (usarValidacionNomina[productoId]) {
+      const nuevosArchivos = { ...archivos };
+      const nuevasValidaciones = { ...validacionesNomina };
+      const nuevosErrores = { ...erroresNomina };
+      delete nuevosArchivos[productoId];
+      delete nuevasValidaciones[productoId];
+      delete nuevosErrores[productoId];
+      setArchivos(nuevosArchivos);
+      setValidacionesNomina(nuevasValidaciones);
+      setErroresNomina(nuevosErrores);
+    }
+  };
+
+  const handleArchivoChange = (e, productoId) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.name.endsWith('.csv')) {
+        mostrarError('Solo se permiten archivos CSV');
+        return;
+      }
+      setArchivos(prev => ({
+        ...prev,
+        [productoId]: file
+      }));
+      // Limpiar resultados previos
+      const nuevasValidaciones = { ...validacionesNomina };
+      const nuevosErrores = { ...erroresNomina };
+      delete nuevasValidaciones[productoId];
+      delete nuevosErrores[productoId];
+      setValidacionesNomina(nuevasValidaciones);
+      setErroresNomina(nuevosErrores);
+    }
+  };
+
+  const validarArchivoNomina = async (productoId) => {
+    const cantidad = cantidades[productoId];
+    const archivo = archivos[productoId];
+
+    if (!cantidad || parseInt(cantidad) <= 0) {
+      mostrarError('Ingresa una cantidad válida de tarjetas');
+      return;
+    }
+
+    if (!archivo) {
+      mostrarError('Selecciona un archivo CSV');
+      return;
+    }
+
+    setLoading(true);
+    const nuevosErrores = { ...erroresNomina };
+    delete nuevosErrores[productoId];
+    setErroresNomina(nuevosErrores);
+
+    try {
+      const formData = new FormData();
+      formData.append('archivo', archivo);
+      formData.append('clienteId', clienteSeleccionado);
+      formData.append('cantidadTarjetasSolicitadas', cantidad);
+
+      const response = await fetch('http://localhost:3001/api/validacion/nomina', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setValidacionesNomina(prev => ({
+          ...prev,
+          [productoId]: data
+        }));
+        mostrarExito('Archivo validado correctamente');
+      } else {
+        setErroresNomina(prev => ({
+          ...prev,
+          [productoId]: data
+        }));
+        mostrarError(data.mensaje || 'Error en la validación');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      mostrarError('Error al validar archivo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Render condicional según la pestaña activa
+  const renderPedidoNormal = () => (
+    <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Columna Izquierda: Formulario */}
         <div className="lg:col-span-2 space-y-6">
@@ -367,26 +479,143 @@ const SolicitudPedido = () => {
                                 </div>
                               </div>
 
-                              {/* Input cantidad y botón validar */}
+                              {/* Input cantidad */}
                               <div className="flex gap-2">
                                 <input
                                   type="number"
                                   value={cantidades[producto.id] || ''}
                                   onChange={(e) => actualizarCantidad(producto.id, e.target.value)}
-                                  placeholder="Cantidad"
+                                  placeholder="Cantidad de tarjetas"
                                   min="1"
                                   className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none text-sm"
                                 />
+                              </div>
+
+                              {/* Toggle para validación de nómina */}
+                              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={usarValidacionNomina[producto.id] || false}
+                                    onChange={() => toggleValidacionNomina(producto.id)}
+                                    className="w-4 h-4 text-brand-primary rounded focus:ring-2 focus:ring-brand-primary/20"
+                                  />
+                                  <span className="text-sm font-medium text-slate-700">
+                                    Usar validación de nómina
+                                  </span>
+                                </label>
+                              </div>
+
+                              {/* Sección de validación de nómina (si está activada) */}
+                              {usarValidacionNomina[producto.id] && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-medium text-blue-900">Validación de Nómina</span>
+                                    <button
+                                      onClick={descargarPlantilla}
+                                      className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 font-medium"
+                                    >
+                                      <Download className="w-3 h-3" />
+                                      Descargar plantilla
+                                    </button>
+                                  </div>
+
+                                  {cantidades[producto.id] && (
+                                    <div className="text-xs bg-white rounded p-2 border border-blue-200">
+                                      <span className="text-slate-600">Mínimo requerido (90%):</span>
+                                      <span className="font-bold text-slate-900 ml-1">
+                                        {Math.ceil(parseInt(cantidades[producto.id]) * 0.9)} empleados válidos
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  <div className="border-2 border-dashed border-blue-300 rounded-lg p-3 bg-white">
+                                    <input
+                                      type="file"
+                                      accept=".csv"
+                                      onChange={(e) => handleArchivoChange(e, producto.id)}
+                                      className="hidden"
+                                      id={`file-upload-${producto.id}`}
+                                    />
+                                    <label
+                                      htmlFor={`file-upload-${producto.id}`}
+                                      className="cursor-pointer flex flex-col items-center"
+                                    >
+                                      <FileText className="w-8 h-8 text-blue-400 mb-1" />
+                                      <div className="text-xs font-medium text-slate-900 text-center">
+                                        {archivos[producto.id] ? archivos[producto.id].name : 'Selecciona archivo CSV'}
+                                      </div>
+                                      <div className="text-[10px] text-slate-500 mt-0.5">
+                                        Click para seleccionar
+                                      </div>
+                                    </label>
+                                  </div>
+
+                                  {archivos[producto.id] && !validacionesNomina[producto.id] && !erroresNomina[producto.id] && (
+                                    <button
+                                      onClick={() => validarArchivoNomina(producto.id)}
+                                      disabled={loading}
+                                      className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-xs font-semibold"
+                                    >
+                                      {loading ? 'Validando...' : 'Validar Archivo de Nómina'}
+                                    </button>
+                                  )}
+
+                                  {/* Resultado de validación de nómina - ERROR */}
+                                  {erroresNomina[producto.id] && (
+                                    <div className="bg-red-50 border border-red-300 rounded-lg p-2">
+                                      <div className="flex items-start gap-2">
+                                        <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                                        <div className="flex-1">
+                                          <div className="text-xs font-bold text-red-900 mb-1">
+                                            {erroresNomina[producto.id].mensaje}
+                                          </div>
+                                          {erroresNomina[producto.id].detalle && (
+                                            <div className="text-[10px] text-red-700 space-y-0.5">
+                                              <div>Válidos: {erroresNomina[producto.id].detalle.empleados_validos_encontrados} / {erroresNomina[producto.id].detalle.minimo_empleados_requerido}</div>
+                                              <div>Faltan: {erroresNomina[producto.id].detalle.faltante} empleados</div>
+                                              <div>Cumplimiento: {erroresNomina[producto.id].detalle.porcentaje_cumplido}%</div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Resultado de validación de nómina - ÉXITO */}
+                                  {validacionesNomina[producto.id] && validacionesNomina[producto.id].success && (
+                                    <div className="bg-green-50 border border-green-300 rounded-lg p-2">
+                                      <div className="flex items-start gap-2">
+                                        <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                                        <div className="flex-1">
+                                          <div className="text-xs font-bold text-green-900 mb-1">
+                                            ✅ Nómina Validada
+                                          </div>
+                                          {validacionesNomina[producto.id].resumen && (
+                                            <div className="text-[10px] text-green-700 space-y-0.5">
+                                              <div>Empleados válidos: {validacionesNomina[producto.id].resumen.empleados_validos}</div>
+                                              <div>Cumplimiento: {validacionesNomina[producto.id].resumen.porcentaje_cumplido}%</div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Botón validar pedido (solo si NO usa validación de nómina O si ya validó la nómina) */}
+                              {(!usarValidacionNomina[producto.id] || (usarValidacionNomina[producto.id] && validacionesNomina[producto.id]?.success)) && (
                                 <button
                                   onClick={() => handleValidarProducto(producto.id)}
                                   disabled={loading || !cantidades[producto.id]}
-                                  className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold whitespace-nowrap"
+                                  className="w-full px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
                                 >
-                                  Validar
+                                  Validar Pedido
                                 </button>
-                              </div>
+                              )}
 
-                              {/* Resultado de validación */}
+                              {/* Resultado de validación del pedido */}
                               {validacion && (
                                 <div className={`p-3 rounded-lg border ${
                                   validacion.puede_aprobar
@@ -533,6 +762,19 @@ const SolicitudPedido = () => {
           )}
         </div>
       </div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900 mb-1">Solicitud de Pedidos</h1>
+        <p className="text-slate-500">Crea nuevos pedidos con opción de validación de nómina</p>
+      </div>
+
+      {/* Contenido */}
+      {renderPedidoNormal()}
     </div>
   );
 };
