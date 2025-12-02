@@ -8,6 +8,7 @@ import AlertasStock from './components/AlertasStock';
 import TrackingCliente from './components/TrackingCliente';
 import DashboardEnvios from './components/DashboardEnvios';
 import GestionEnvios from './components/GestionEnvios';
+import Inventario from './components/Inventario';
 import InventarioCompleto from './components/InventarioCompleto';
 import SistemaTickets from './components/SistemaTickets';
 import EstadoConexion from './components/EstadoConexion';
@@ -29,7 +30,8 @@ function App() {
               <Route path="/tracking" element={<TrackingCliente />} />
               <Route path="/envios" element={<DashboardEnvios />} />
               <Route path="/gestion-envios" element={<GestionEnvios />} />
-              <Route path="/inventario" element={<InventarioCompleto />} />
+              <Route path="/inventario" element={<Inventario />} />
+              <Route path="/inventario-completo" element={<InventarioCompleto />} />
               <Route path="/tickets" element={<SistemaTickets clienteId={1} />} />
             </Routes>
           </main>

@@ -128,13 +128,13 @@ const Inventario = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-mono text-sm text-slate-800 font-semibold">{producto.stock_actual} un.</div>
+                        <div className="font-mono text-sm text-slate-800 font-semibold">{producto.stock_actual || 0}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-mono text-sm text-slate-500">{producto.stock_minimo} un.</div>
+                        <div className="font-mono text-sm text-slate-500">{producto.stock_minimo || 0}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-mono text-sm text-slate-500">{producto.stock_maximo} un.</div>
+                        <div className="font-mono text-sm text-slate-500">{producto.stock_maximo || 0}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-mono text-sm text-slate-500">{producto.tiempo_resurtido_dias} días</div>

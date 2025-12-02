@@ -59,7 +59,7 @@ const InventarioCompleto = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl shadow-card border border-slate-200">
           <div className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Stock Total</div>
-          <div className="text-3xl font-bold text-slate-900">{getTotalStock().toLocaleString()}</div>
+          <div className="text-3xl font-bold text-slate-900">{getTotalStock()}</div>
           <div className="mt-2 text-xs text-slate-400">Todas las tarjetas</div>
         </div>
 
@@ -68,7 +68,7 @@ const InventarioCompleto = () => {
           <div className="text-emerald-600 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1">
             <TrendingUp className="w-3 h-3" /> Disponible
           </div>
-          <div className="text-3xl font-bold text-slate-900">{getDisponibleTotal().toLocaleString()}</div>
+          <div className="text-3xl font-bold text-slate-900">{getDisponibleTotal()}</div>
           <div className="mt-2 text-xs text-emerald-600/80 font-medium">
             {((getDisponibleTotal() / getTotalStock()) * 100).toFixed(1)}% del total
           </div>
@@ -79,7 +79,7 @@ const InventarioCompleto = () => {
           <div className="text-blue-600 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1">
             <Truck className="w-3 h-3" /> En Tránsito
           </div>
-          <div className="text-3xl font-bold text-slate-900">{getEnTransitoTotal().toLocaleString()}</div>
+          <div className="text-3xl font-bold text-slate-900">{getEnTransitoTotal()}</div>
           <div className="mt-2 text-xs text-blue-600/80 font-medium">Camino al cliente</div>
         </div>
 
@@ -88,7 +88,7 @@ const InventarioCompleto = () => {
           <div className="text-purple-600 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1">
             <CheckCircle className="w-3 h-3" /> Con Clientes
           </div>
-          <div className="text-3xl font-bold text-slate-900">{getRecibidoTotal().toLocaleString()}</div>
+          <div className="text-3xl font-bold text-slate-900">{getRecibidoTotal()}</div>
           <div className="mt-2 text-xs text-purple-600/80 font-medium">Ya entregadas</div>
         </div>
       </div>
@@ -144,22 +144,22 @@ const InventarioCompleto = () => {
                     </td>
 
                     <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-slate-900">{item.stock_total.toLocaleString()}</div>
+                      <div className="text-sm font-bold text-slate-900">{item.stock_total}</div>
                       <div className="text-xs text-slate-500">unidades</div>
                     </td>
 
                     <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-emerald-600">{item.stock_disponible.toLocaleString()}</div>
+                      <div className="text-sm font-bold text-emerald-600">{item.stock_disponible}</div>
                       <div className="text-xs text-emerald-600/70">{disponiblePct.toFixed(1)}%</div>
                     </td>
 
                     <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-blue-600">{item.stock_en_transito.toLocaleString()}</div>
+                      <div className="text-sm font-bold text-blue-600">{item.stock_en_transito}</div>
                       <div className="text-xs text-blue-600/70">{transitoPct.toFixed(1)}%</div>
                     </td>
 
                     <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-purple-600">{item.stock_recibido_cliente.toLocaleString()}</div>
+                      <div className="text-sm font-bold text-purple-600">{item.stock_recibido_cliente}</div>
                       <div className="text-xs text-purple-600/70">{recibidoPct.toFixed(1)}%</div>
                     </td>
 

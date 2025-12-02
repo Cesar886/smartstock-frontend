@@ -344,6 +344,9 @@ const SolicitudPedido = () => {
           [productoId]: data
         }));
         mostrarExito('Archivo validado correctamente');
+        
+        // ✅ AUTOMÁTICAMENTE VALIDAR EL PEDIDO DESPUÉS DE VALIDAR LA NÓMINA
+        await handleValidarProducto(productoId);
       } else {
         setErroresNomina(prev => ({
           ...prev,
@@ -589,7 +592,7 @@ const SolicitudPedido = () => {
                                         <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
                                         <div className="flex-1">
                                           <div className="text-xs font-bold text-green-900 mb-1">
-                                            ✅ Nómina Validada
+                                            ✅ Nómina Validada - Validando pedido...
                                           </div>
                                           {validacionesNomina[producto.id].resumen && (
                                             <div className="text-[10px] text-green-700 space-y-0.5">
@@ -729,7 +732,13 @@ const SolicitudPedido = () => {
               </div>
 
               {Object.values(validaciones).some(v => v?.puede_aprobar) && (
-                <div className="p-4 border-t border-slate-200">
+                <div className="p-4 border-t border-slate-200 bg-emerald-50">
+                  <div className="bg-white border-2 border-emerald-300 rounded-lg p-3 mb-3">
+                    <div className="flex items-center gap-2 text-emerald-800 text-xs font-medium">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>Haz clic para ENVIAR y descontar del inventario</span>
+                    </div>
+                  </div>
                   <button
                     onClick={handleConfirmarTodos}
                     disabled={loading}
@@ -738,17 +747,17 @@ const SolicitudPedido = () => {
                     {loading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Procesando...
+                        Enviando Pedidos...
                       </>
                     ) : (
                       <>
-                        <CheckCircle className="w-4 h-4" />
-                        Confirmar Pedidos
+                        <Package className="w-4 h-4" />
+                        Enviar Pedidos y Descontar Stock
                       </>
                     )}
                   </button>
-                  <p className="text-xs text-center text-slate-500 mt-2">
-                    {Object.values(validaciones).filter(v => v?.puede_aprobar).length} pedido(s) aprobado(s)
+                  <p className="text-xs text-center text-slate-600 mt-2 font-medium">
+                    {Object.values(validaciones).filter(v => v?.puede_aprobar).length} pedido(s) listo(s) para enviar
                   </p>
                 </div>
               )}
