@@ -14,9 +14,6 @@ const SolicitudPedido = () => {
   const [validaciones, setValidaciones] = useState({});
   const [loading, setLoading] = useState(false);
   const [loadingProductos, setLoadingProductos] = useState(false);
-  const [rfc, setRfc] = useState('');
-  const [rfcValidado, setRfcValidado] = useState(false);
-  const [errorRfc, setErrorRfc] = useState('');
   const { error: mostrarError, exito: mostrarExito } = useNotificaciones();
 
   // Cargar clientes al inicio
@@ -110,43 +107,11 @@ const SolicitudPedido = () => {
       setProductosSeleccionados([]);
       setCantidades({});
       setValidaciones({});
-      setRfc('');
-      setRfcValidado(false);
-      setErrorRfc('');
     } else {
       setProductosDisponibles([]);
       setContratosCliente([]);
     }
   }, [clienteSeleccionado, cargarProductosCliente]);
-
-  // Validar formato RFC
-  const validarFormatoRFC = (rfcInput) => {
-    const rfcClean = rfcInput.toUpperCase().trim();
-    // RFC Persona Física: 13 caracteres (4 letras + 6 números + 3 alfanuméricos)
-    // RFC Persona Moral: 12 caracteres (3 letras + 6 números + 3 alfanuméricos)
-    const regexRFC = /^([A-ZÑ&]{3,4})?(\d{6})?([A-Z0-9]{3})?$/;
-    return regexRFC.test(rfcClean) && (rfcClean.length === 12 || rfcClean.length === 13);
-  };
-
-  // Manejar cambio de RFC
-  const handleRfcChange = (e) => {
-    const valor = e.target.value.toUpperCase();
-    setRfc(valor);
-    setErrorRfc('');
-    
-    if (valor.length === 0) {
-      setRfcValidado(false);
-      setErrorRfc('');
-    } else if (validarFormatoRFC(valor)) {
-      setRfcValidado(true);
-      setErrorRfc('');
-    } else {
-      setRfcValidado(false);
-      if (valor.length > 0) {
-        setErrorRfc('Formato de RFC inválido (debe tener 12 o 13 caracteres)');
-      }
-    }
-  };
 
   // Manejar selección/deselección de producto
   const toggleProducto = (productoId) => {
@@ -222,13 +187,6 @@ const SolicitudPedido = () => {
 
   // Confirmar todos los pedidos validados
   const handleConfirmarTodos = async () => {
-    // Validar RFC antes de confirmar
-    if (!rfcValidado || !rfc) {
-      mostrarError('Debes ingresar un RFC válido para cerrar el contrato');
-      setErrorRfc('RFC requerido para confirmar el pedido');
-      return;
-    }
-
     const pedidosAprobados = productosSeleccionados.filter(
       prodId => validaciones[prodId]?.puede_aprobar
     );
@@ -249,8 +207,7 @@ const SolicitudPedido = () => {
           contrato_id: contratoInfo.contrato_id,
           cliente_id: contratoInfo.cliente_id,
           producto_id: contratoInfo.producto_id,
-          cantidad: parseInt(cantidades[productoId]),
-          rfc: rfc.toUpperCase().trim()
+          cantidad: parseInt(cantidades[productoId])
         };
         
         console.log('📤 Enviando pedido:', payload);
@@ -271,7 +228,7 @@ const SolicitudPedido = () => {
     }
 
     if (exitosos > 0) {
-      mostrarExito(`${exitosos} pedido(s) creado(s) exitosamente con RFC: ${rfc}`);
+      mostrarExito(`${exitosos} pedido(s) creado(s) exitosamente`);
     }
     if (fallidos > 0) {
       mostrarError(`${fallidos} pedido(s) fallaron`);
@@ -282,9 +239,6 @@ const SolicitudPedido = () => {
     setProductosSeleccionados([]);
     setCantidades({});
     setValidaciones({});
-    setRfc('');
-    setRfcValidado(false);
-    setErrorRfc('');
     setLoading(false);
   };
 
@@ -323,55 +277,6 @@ const SolicitudPedido = () => {
               </select>
             </div>
           </div>
-
-          {/* RFC del Cliente */}
-          {clienteSeleccionado && (
-            <div className="bg-white p-6 rounded-xl shadow-card border border-slate-200">
-              <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-brand-secondary" />
-                RFC del Cliente (Requerido para cerrar contrato)
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={rfc}
-                  onChange={handleRfcChange}
-                  placeholder="XAXX010101000 (12 o 13 caracteres)"
-                  maxLength="13"
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 outline-none transition-all text-slate-900 uppercase ${
-                    rfcValidado
-                      ? 'border-green-500 bg-green-50 focus:ring-green-500/20 focus:border-green-500'
-                      : errorRfc
-                      ? 'border-red-500 bg-red-50 focus:ring-red-500/20 focus:border-red-500'
-                      : 'border-slate-300 bg-slate-50 focus:ring-brand-primary/20 focus:border-brand-primary'
-                  }`}
-                />
-                {rfcValidado && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  </div>
-                )}
-              </div>
-              {errorRfc && (
-                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                  <XCircle className="w-4 h-4" />
-                  {errorRfc}
-                </p>
-              )}
-              {rfcValidado && (
-                <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4" />
-                  RFC válido
-                </p>
-              )}
-              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-xs text-blue-700">
-                  <strong>Importante:</strong> El RFC es necesario para formalizar el contrato de las tarjetas. 
-                  Debe ser un RFC válido de 12 caracteres (persona moral) o 13 caracteres (persona física).
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Selección de Productos Múltiples */}
           {clienteSeleccionado && (
@@ -596,30 +501,9 @@ const SolicitudPedido = () => {
 
               {Object.values(validaciones).some(v => v?.puede_aprobar) && (
                 <div className="p-4 border-t border-slate-200">
-                  {!rfcValidado && (
-                    <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                      <div className="flex items-center gap-2 text-xs text-amber-700">
-                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                        <span className="font-medium">
-                          Ingresa el RFC del cliente para poder confirmar los pedidos
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  {rfcValidado && (
-                    <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2 text-xs text-green-700">
-                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                        <div>
-                          <div className="font-medium">RFC validado</div>
-                          <div className="mt-0.5 text-green-600">{rfc}</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                   <button
                     onClick={handleConfirmarTodos}
-                    disabled={loading || !rfcValidado}
+                    disabled={loading}
                     className="w-full py-3 px-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-bold shadow-md flex items-center justify-center gap-2"
                   >
                     {loading ? (
@@ -630,7 +514,7 @@ const SolicitudPedido = () => {
                     ) : (
                       <>
                         <CheckCircle className="w-4 h-4" />
-                        Confirmar y Cerrar Contrato
+                        Confirmar Pedidos
                       </>
                     )}
                   </button>

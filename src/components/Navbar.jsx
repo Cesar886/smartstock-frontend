@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Package, AlertTriangle, BarChart3, FileText, Truck, MapPin, Warehouse, MessageSquare, Upload } from 'lucide-react';
+import { Home, Package, AlertTriangle, BarChart3, FileText, Truck, MapPin, Warehouse, MessageSquare } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
@@ -76,18 +76,6 @@ const Navbar = () => {
               >
                 <Warehouse className={`w-4 h-4 ${isActive('/solicitar') ? 'text-purple-600' : 'text-slate-400'}`} />
                 <span>Pedidos</span>
-              </Link>
-
-              <Link
-                to="/solicitar-validado"
-                className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-                  isActive('/solicitar-validado') 
-                    ? 'bg-white text-green-600 shadow-sm ring-1 ring-black/5' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <Upload className={`w-4 h-4 ${isActive('/solicitar-validado') ? 'text-green-600' : 'text-slate-400'}`} />
-                <span>Validado</span>
               </Link>
 
               <Link
