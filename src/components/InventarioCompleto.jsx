@@ -133,12 +133,12 @@ const InventarioCompleto = () => {
                 const recibidoPct = (item.stock_recibido_cliente / item.stock_total) * 100;
 
                 return (
-                  <tr key={`inventario-${item.producto_id}-${index}`} className="hover:bg-slate-50/30 transition-colors group">
+                  <tr key={`inventario-${item.producto}-${index}`} className="hover:bg-slate-50/30 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="text-sm">
                           <div className="font-semibold text-slate-900">{item.producto_nombre}</div>
-                          <div className="text-slate-500 text-xs">ID: {item.producto_id}</div>
+                          <div className="text-slate-500 text-xs">ID: {item.producto}</div>
                         </div>
                       </div>
                     </td>

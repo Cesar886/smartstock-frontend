@@ -37,7 +37,9 @@ const SolicitudPedido = () => {
   const cargarProductos = useCallback(async () => {
     try {
       const response = await productosService.getAll();
-      setProductos(response.data);
+      // Asegurar que los ids sean numeros (en caso de venir como strings)
+      const productosNormalizados = response.data.map(p => ({ ...p, id: Number(p.id) }));
+      setProductos(productosNormalizados);
     } catch (error) {
       console.error('Error al cargar productos:', error);
       mostrarError('Error al cargar productos');
@@ -50,8 +52,11 @@ const SolicitudPedido = () => {
     try {
       // Obtener todos los contratos del cliente
       const responseContratos = await contratosService.getAll();
+      const clienteNum = Number(clienteId);
+
+      // Asegurarnos de que los campos del backend sean cliente_id y product_id
       const contratosDelCliente = responseContratos.data.filter(
-        c => c.cliente_id === parseInt(clienteId)
+        c => Number(c.cliente_id) === clienteNum
       );
 
       setContratosCliente(contratosDelCliente);
@@ -62,12 +67,12 @@ const SolicitudPedido = () => {
         return;
       }
 
-      // Obtener los IDs de productos que tienen contrato con este cliente
-      const productosConContrato = contratosDelCliente.map(c => c.producto_id);
+      // Obtener los IDs de productos que tienen contrato con este cliente (product_id)
+      const productosConContrato = contratosDelCliente.map(c => Number(c.product_id));
 
-      // Filtrar productos que tienen contrato
-      const productosValidos = productos.filter(p => 
-        productosConContrato.includes(p.id)
+      // Filtrar productos que tienen contrato (asegurando tipo Number)
+      const productosValidos = productos.filter(p =>
+        productosConContrato.includes(Number(p.id))
       );
 
       setProductosDisponibles(productosValidos);
@@ -82,17 +87,18 @@ const SolicitudPedido = () => {
 
   // Obtener información de contrato para un producto específico
   const obtenerContratoInfo = useCallback((productoId) => {
-    const contrato = contratosCliente.find(c => c.producto_id === parseInt(productoId));
+    // El backend usa product_id; aquí devolvemos campos con nombres que usa tu UI:
+    const contrato = contratosCliente.find(c => Number(c.product_id) === Number(productoId));
     if (!contrato) return null;
 
-    const porcentaje_uso = contrato.tarjetas_emitidas > 0 
-      ? ((contrato.tarjetas_activas / contrato.tarjetas_emitidas) * 100).toFixed(1)
+    const porcentaje_uso = contrato.tarjetas_emitidas > 0
+      ? ((contractSafe(contrato.tarjetas_activas) / contractSafe(contrato.tarjetas_emitidas)) * 100).toFixed(1)
       : 0;
-    
+
     return {
       contrato_id: contrato.id,
       cliente_id: contrato.cliente_id,
-      producto_id: contrato.producto_id,
+      producto_id: contrato.product_id, // mantenemos la llave producto_id en el objeto para compatibilidad UI
       tarjetas_emitidas: contrato.tarjetas_emitidas,
       tarjetas_activas: contrato.tarjetas_activas,
       tarjetas_inactivas: contrato.tarjetas_inactivas,
@@ -100,6 +106,12 @@ const SolicitudPedido = () => {
       limite_contrato: contrato.limite_contrato
     };
   }, [contratosCliente]);
+
+  // helper: evitar división por 0 y normalizar números
+  function contractSafe(v) {
+    const n = Number(v);
+    return isNaN(n) ? 0 : n;
+  }
 
   useEffect(() => {
     cargarClientes();
@@ -160,7 +172,7 @@ const SolicitudPedido = () => {
       return;
     }
 
-    const cantidadNum = parseInt(cantidad);
+    const cantidadNum = parseInt(cantidad, 10);
     if (isNaN(cantidadNum) || cantidadNum <= 0) {
       mostrarError('La cantidad debe ser un número mayor a 0');
       return;
@@ -213,9 +225,9 @@ const SolicitudPedido = () => {
           contrato_id: contratoInfo.contrato_id,
           cliente_id: contratoInfo.cliente_id,
           producto_id: contratoInfo.producto_id,
-          cantidad: parseInt(cantidades[productoId])
+          cantidad: parseInt(cantidades[productoId], 10)
         };
-        
+
         console.log('📤 Enviando pedido:', payload);
         const response = await pedidosService.crear(payload);
         console.log('✅ Pedido creado exitosamente:', response.data);
@@ -225,8 +237,7 @@ const SolicitudPedido = () => {
         console.error('Detalles del error:', error.response?.data);
         console.error('Status:', error.response?.status);
         console.error('Mensaje:', error.response?.data?.error || error.message);
-        
-        // Mostrar error específico del backend si está disponible
+
         const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Error desconocido';
         console.error(`🔴 Razón del fallo: ${errorMsg}`);
         fallidos++;
@@ -267,11 +278,12 @@ const SolicitudPedido = () => {
   };
 
   const toggleValidacionNomina = (productoId) => {
-    setUsarValidacionNomina(prev => ({
-      ...prev,
-      [productoId]: !prev[productoId]
-    }));
-    // Limpiar datos de validación cuando se desactiva
+    setUsarValidacionNomina(prev => {
+      const nuevo = { ...prev, [productoId]: !prev[productoId] };
+      return nuevo;
+    });
+
+    // Si se desactiva, limpiar datos relacionados
     if (usarValidacionNomina[productoId]) {
       const nuevosArchivos = { ...archivos };
       const nuevasValidaciones = { ...validacionesNomina };
@@ -310,7 +322,7 @@ const SolicitudPedido = () => {
     const cantidad = cantidades[productoId];
     const archivo = archivos[productoId];
 
-    if (!cantidad || parseInt(cantidad) <= 0) {
+    if (!cantidad || parseInt(cantidad, 10) <= 0) {
       mostrarError('Ingresa una cantidad válida de tarjetas');
       return;
     }
@@ -455,7 +467,7 @@ const SolicitudPedido = () => {
                                   : 'bg-amber-100 text-amber-700'
                               }`}>
                                 <Activity className="w-3 h-3" />
-                                {contratoInfo.porcentaje_uso}%
+                                {contratoInfo.porcentaje_uso}% 
                               </div>
                             )}
                           </div>
@@ -524,7 +536,7 @@ const SolicitudPedido = () => {
                                     <div className="text-xs bg-white rounded p-2 border border-blue-200">
                                       <span className="text-slate-600">Mínimo requerido (90%):</span>
                                       <span className="font-bold text-slate-900 ml-1">
-                                        {Math.ceil(parseInt(cantidades[producto.id]) * 0.9)} empleados válidos
+                                        {Math.ceil(parseInt(cantidades[producto.id], 10) * 0.9)} empleados válidos
                                       </span>
                                     </div>
                                   )}
