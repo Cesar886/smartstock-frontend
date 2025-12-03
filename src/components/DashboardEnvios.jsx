@@ -109,22 +109,6 @@ const DashboardEnvios = () => {
           <h1 className="text-3xl font-bold text-slate-900">Gestión de Envíos</h1>
           <p className="text-slate-600 mt-1">Monitoreo y control de entregas</p>
         </div>
-        <div className="flex gap-2">
-          <a
-            href="/gestion-envios"
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold flex items-center gap-2 shadow-md transition-colors"
-          >
-            <Package className="w-5 h-5" />
-            Gestionar Pedidos Pendientes
-          </a>
-          {/* <button
-            onClick={() => setMostrarModal(true)}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold flex items-center gap-2 shadow-md transition-colors"
-          >
-            <Package className="w-5 h-5" />
-            Nuevo Envío
-          </button> */}
-        </div>
       </div>
 
       {/* Resumen de Estados */}

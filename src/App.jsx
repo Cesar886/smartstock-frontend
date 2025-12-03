@@ -1,43 +1,54 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ResumenGeneral from './components/ResumenGeneral';
-import DashboardRendimiento from './components/DashboardRendimiento';
-import SolicitudPedido from './components/SolicitudPedido';
-import ListaPedidos from './components/ListaPedidos';
-import AlertasStock from './components/AlertasStock';
-import TrackingCliente from './components/TrackingCliente';
-import DashboardEnvios from './components/DashboardEnvios';
-import GestionEnvios from './components/GestionEnvios';
-import Inventario from './components/Inventario';
-import InventarioCompleto from './components/InventarioCompleto';
-import SistemaTickets from './components/SistemaTickets';
-import EstadoConexion from './components/EstadoConexion';
+import AdminPanel from './pages/AdminPanel';
+import PanelPedidos from './pages/PanelPedidos';
+import Login from './components/Login';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { NotificacionProvider } from './components/Notificaciones';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
-    <NotificacionProvider>
-      <Router>
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-          <Navbar />
-          <main className="max-w-7xl mx-auto px-6 py-8">
-            <Routes>
-              <Route path="/" element={<ResumenGeneral />} />
-              <Route path="/dashboard" element={<DashboardRendimiento />} />
-              <Route path="/solicitar" element={<SolicitudPedido />} />
-              <Route path="/pedidos" element={<ListaPedidos />} />
-              <Route path="/alertas" element={<AlertasStock />} />
-              <Route path="/tracking" element={<TrackingCliente />} />
-              <Route path="/envios" element={<DashboardEnvios />} />
-              <Route path="/gestion-envios" element={<GestionEnvios />} />
-              <Route path="/inventario" element={<Inventario />} />
-              <Route path="/inventario-completo" element={<InventarioCompleto />} />
-              <Route path="/tickets" element={<SistemaTickets clienteId={1} />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
-    </NotificacionProvider>
+    <AuthProvider>
+      <NotificacionProvider>
+        <Router>
+          <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+            <Navbar />
+            <main className="max-w-7xl mx-auto px-6 py-8">
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route 
+                  path="/" 
+                  element={
+                    <ProtectedRoute>
+                      <ResumenGeneral />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/*" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminPanel />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/pedidos/*" 
+                  element={
+                    <ProtectedRoute>
+                      <PanelPedidos />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+            </main>
+          </div>
+        </Router>
+      </NotificacionProvider>
+    </AuthProvider>
   );
 }
 

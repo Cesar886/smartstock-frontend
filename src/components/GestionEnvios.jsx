@@ -64,55 +64,6 @@ export default function GestionEnvios() {
     }
   };
 
-  const crearEnviosMasivos = async () => {
-    if (pedidosPendientes.length === 0) {
-      alert('No hay pedidos pendientes para procesar');
-      return;
-    }
-
-    if (!confirm(`¿Crear envíos para ${pedidosPendientes.length} pedidos pendientes?`)) {
-      return;
-    }
-
-    setProcesando('masivo');
-    let exitosos = 0;
-    let fallidos = 0;
-
-    for (const pedido of pedidosPendientes) {
-      try {
-        // Asignar repartidor de forma rotativa
-        const repartidorIndex = exitosos % repartidores.length;
-        const repartidorId = repartidores[repartidorIndex]?.id;
-
-        if (!repartidorId) {
-          fallidos++;
-          continue;
-        }
-
-        const envioData = {
-          pedido_id: pedido.id,
-          repartidor_id: repartidorId,
-          direccion_destino: pedido.direccion_entrega || 'Dirección del cliente',
-          ubicacion_actual: {
-            lat: -33.4489,
-            lng: -70.6693
-          }
-        };
-
-        await enviosService.crear(envioData);
-        exitosos++;
-      } catch (err) {
-        console.error(`Error al crear envío para pedido ${pedido.id}:`, err);
-        fallidos++;
-      }
-    }
-
-    await cargarDatos();
-    setProcesando(null);
-    
-    alert(`Proceso completado:\nExitosos: ${exitosos}\nFallidos: ${fallidos}`);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -143,7 +94,7 @@ export default function GestionEnvios() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Gestión de Envíos</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Pedidos</h2>
           <p className="text-gray-600 mt-1">
             Convierte pedidos pendientes en envíos activos
           </p>
@@ -156,15 +107,6 @@ export default function GestionEnvios() {
           >
             Actualizar
           </button>
-          {pedidosPendientes.length > 0 && repartidores.length > 0 && (
-            <button
-              onClick={crearEnviosMasivos}
-              disabled={procesando}
-              className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium shadow-sm transition-colors"
-            >
-              {procesando === 'masivo' ? 'Procesando...' : 'Crear Envíos Masivos'}
-            </button>
-          )}
         </div>
       </div>
 
@@ -208,7 +150,7 @@ export default function GestionEnvios() {
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800">
-              Pedidos Pendientes de Envío
+              Pedidos Pendientes
             </h3>
           </div>
           <div className="overflow-x-auto">

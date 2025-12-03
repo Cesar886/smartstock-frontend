@@ -1,10 +1,23 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Package, AlertTriangle, BarChart3, FileText, Truck, MapPin, Warehouse, MessageSquare } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Shield, FileText, LogOut, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const location = useLocation();
-  const isActive = (path) => location.pathname === path;
+  const navigate = useNavigate();
+  const { user, logout, isAdmin } = useAuth();
+  const isActive = (path) => location.pathname.startsWith(path) && path !== '/' || location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  // No mostrar navbar en la página de login
+  if (location.pathname === '/login') {
+    return null;
+  }
 
   return (
     <nav className="bg-white shadow-md border-b border-slate-200 sticky top-0 z-40 backdrop-blur-md bg-white/90">
@@ -33,75 +46,62 @@ const Navbar = () => {
               <Link
                 to="/"
                 className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-                  isActive('/') 
+                  location.pathname === '/' 
                     ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' 
                     : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                 }`}
               >
-                <Home className={`w-4 h-4 ${isActive('/') ? 'text-blue-600' : 'text-slate-400'}`} />
+                <Home className={`w-4 h-4 ${location.pathname === '/' ? 'text-blue-600' : 'text-slate-400'}`} />
                 <span>Inicio</span>
               </Link>
 
-              <Link
-                to="/dashboard"
-                className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-                  isActive('/dashboard') 
-                    ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <BarChart3 className={`w-4 h-4 ${isActive('/dashboard') ? 'text-blue-600' : 'text-slate-400'}`} />
-                <span>Rendimiento</span>
-              </Link>
-
-              <Link
-                to="/inventario"
-                className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-                  isActive('/inventario') 
-                    ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <Package className={`w-4 h-4 ${isActive('/inventario') ? 'text-blue-600' : 'text-slate-400'}`} />
-                <span>Inventario</span>
-              </Link>
+              {/* Solo mostrar Panel Admin si es admin */}
+              {isAdmin() && (
+                <Link
+                  to="/admin"
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
+                    isActive('/admin') 
+                      ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' 
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                  }`}
+                >
+                  <Shield className={`w-4 h-4 ${isActive('/admin') ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <span>Panel Admin</span>
+                </Link>
+              )}
               
               <Link
-                to="/solicitar"
+                to="/pedidos"
                 className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-                  isActive('/solicitar') 
+                  isActive('/pedidos') 
                     ? 'bg-white text-purple-600 shadow-sm ring-1 ring-black/5' 
                     : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                 }`}
               >
-                <Warehouse className={`w-4 h-4 ${isActive('/solicitar') ? 'text-purple-600' : 'text-slate-400'}`} />
-                <span>Pedidos</span>
-              </Link>
-
-              <Link
-                to="/envios"
-                className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-                  isActive('/envios') 
-                    ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <Truck className={`w-4 h-4 ${isActive('/envios') ? 'text-blue-600' : 'text-slate-400'}`} />
-                <span>Envíos</span>
-              </Link>
-
-              <Link
-                to="/tracking"
-                className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-                  isActive('/tracking') 
-                    ? 'bg-white text-purple-600 shadow-sm ring-1 ring-black/5' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <MapPin className={`w-4 h-4 ${isActive('/tracking') ? 'text-purple-600' : 'text-slate-400'}`} />
-                <span>Rastrear</span>
+                <FileText className={`w-4 h-4 ${isActive('/pedidos') ? 'text-purple-600' : 'text-slate-400'}`} />
+                <span>Panel de Pedidos</span>
               </Link>
             </div>
+          </div>
+
+          {/* Usuario y Logout */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-xl border border-slate-200">
+              <User className="w-4 h-4 text-slate-600" />
+              <div className="text-sm">
+                <div className="font-semibold text-slate-900">{user?.username}</div>
+                <div className="text-xs text-slate-500">
+                  {user?.role === 'admin' ? 'Administrador' : 'Usuario'}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-all duration-200 flex items-center gap-2 border border-red-200 font-semibold"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Salir</span>
+            </button>
           </div>
         </div>
       </div>
