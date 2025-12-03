@@ -1,13 +1,10 @@
 import React from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { BarChart3, Package, Truck, MapPin, AlertTriangle, FileCheck } from 'lucide-react';
+import { BarChart3, Package, Truck } from 'lucide-react';
 import DashboardRendimiento from '../components/DashboardRendimiento';
 import Inventario from '../components/Inventario';
 import DashboardEnvios from '../components/DashboardEnvios';
 import GestionEnvios from '../components/GestionEnvios';
-import TrackingCliente from '../components/TrackingCliente';
-import AlertasStock from '../components/AlertasStock';
-import ListaPedidos from '../components/ListaPedidos';
 
 const AdminPanel = () => {
   const location = useLocation();
@@ -30,7 +27,7 @@ const AdminPanel = () => {
 
       {/* Menú de navegación del Admin */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 justify-center">
           <Link
             to="/admin/rendimiento"
             className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
@@ -41,30 +38,6 @@ const AdminPanel = () => {
           >
             <BarChart3 className="w-4 h-4" />
             <span>Rendimiento</span>
-          </Link>
-
-          <Link
-            to="/admin/inventario"
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-              isActive('/admin/inventario') 
-                ? 'bg-blue-600 text-white shadow-md' 
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            <Package className="w-4 h-4" />
-            <span>Inventario</span>
-          </Link>
-
-          <Link
-            to="/admin/envios"
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-              isActive('/admin/envios') 
-                ? 'bg-blue-600 text-white shadow-md' 
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            <Truck className="w-4 h-4" />
-            <span>Dashboard Envíos</span>
           </Link>
 
           <Link
@@ -80,39 +53,27 @@ const AdminPanel = () => {
           </Link>
 
           <Link
-            to="/admin/tracking"
+            to="/admin/envios"
             className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-              isActive('/admin/tracking') 
+              isActive('/admin/envios') 
                 ? 'bg-blue-600 text-white shadow-md' 
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            <MapPin className="w-4 h-4" />
-            <span>Tracking</span>
+            <Truck className="w-4 h-4" />
+            <span>Dashboard Envíos</span>
           </Link>
 
           <Link
-            to="/admin/alertas"
+            to="/admin/inventario"
             className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-              isActive('/admin/alertas') 
+              isActive('/admin/inventario') 
                 ? 'bg-blue-600 text-white shadow-md' 
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            <AlertTriangle className="w-4 h-4" />
-            <span>Alertas</span>
-          </Link>
-
-          <Link
-            to="/admin/gestion-pedidos"
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-              isActive('/admin/gestion-pedidos') 
-                ? 'bg-blue-600 text-white shadow-md' 
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            <FileCheck className="w-4 h-4" />
-            <span>Aprobar Pedidos</span>
+            <Package className="w-4 h-4" />
+            <span>Inventario</span>
           </Link>
         </div>
       </div>
@@ -124,9 +85,6 @@ const AdminPanel = () => {
           <Route path="inventario" element={<Inventario />} />
           <Route path="envios" element={<DashboardEnvios />} />
           <Route path="gestion-envios" element={<GestionEnvios />} />
-          <Route path="tracking" element={<TrackingCliente />} />
-          <Route path="alertas" element={<AlertasStock />} />
-          <Route path="gestion-pedidos" element={<ListaPedidos />} />
           <Route path="/" element={<DashboardRendimiento />} />
         </Routes>
       </div>
