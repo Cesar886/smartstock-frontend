@@ -4,6 +4,7 @@ import ResumenGeneral from './components/ResumenGeneral';
 import AdminPanel from './pages/AdminPanel';
 import PanelPedidos from './pages/PanelPedidos';
 import Login from './components/Login';
+import RegistroCliente from './components/RegistroCliente';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { NotificacionProvider } from './components/Notificaciones';
 import { AuthProvider } from './context/AuthContext';
@@ -18,6 +19,7 @@ function App() {
             <main className="max-w-7xl mx-auto px-6 py-8">
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/clientes/nuevo" element={<RegistroCliente />} />
                 <Route 
                   path="/" 
                   element={

@@ -6,18 +6,18 @@ const MisPedidos = () => {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const cargarPedidos = async () => {
-    try {
-      const response = await pedidosService.getAll();
-      setPedidos(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error al cargar pedidos:', error);
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const cargarPedidos = async () => {
+      try {
+        const response = await pedidosService.getAll();
+        setPedidos(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error al cargar pedidos:', error);
+        setLoading(false);
+      }
+    };
+
     cargarPedidos();
   }, []);
 

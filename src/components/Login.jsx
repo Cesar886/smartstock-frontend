@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { User, Lock, ShieldCheck, UserCircle } from 'lucide-react';
 
@@ -147,12 +147,12 @@ const Login = () => {
           <div className="mt-4 text-center">
             <p className="text-sm text-slate-600">
               ¿No tienes cuenta?{' '}
-              <a
-                href="/registro"
+              <Link
+                to="/clientes/nuevo"
                 className="font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
               >
                 Registrarse aquí
-              </a>
+              </Link>
             </p>
           </div>
         </div>
